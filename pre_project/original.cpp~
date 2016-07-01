@@ -1,0 +1,244 @@
+#include <cstdio>
+#include <string>
+#include <iostream>
+#include <cstring>
+#include <queue>
+using namespace std;
+unsigned int temp_value=100;
+int i,j,total=0;
+char matrix[11][30]={};
+char prep[20][10]={ "of", "to","in", "for", "with", "on", "at", "by", "from", "up", "about",
+"than", "after", "before", "down", "between", "under", "since", "without", "near"};
+char strange=char(27);
+struct data{
+	int a;
+	char **b;
+};
+typedef bool (*comp)(data&,data&);
+
+bool cmp_max(data& a,data &b){
+	
+	if(a.a>b.a)
+		return 1;
+	else if(a.a==b.a)
+	{
+		char **temp_a;
+		char **temp_b;
+		temp_a=a.b;
+		temp_b=b.b;
+
+		if(strcmp(*temp_a,*temp_b)>0)
+			return 1;
+		else if(strcmp(*temp_a,*temp_b)==0)
+			return 0;
+		else
+			return 0;
+
+	}
+	return 0;
+};//not finished;
+void print(char **a)
+{
+	for(;*a;a++)
+	{	for(char *k=*a;*k;k++)
+			printf("%c",*k);
+		printf(" ");
+	}
+	printf("\n");
+}
+priority_queue<data,vector<data>,comp> queue1(cmp_max);
+
+struct node{
+	unsigned int value=0;
+	node* next[27];
+}*root=new node();
+
+int lookup(char* s){
+    node* p = root;
+    for (; *s; ++s)
+    {
+    char temp=*s-'a';
+    if(*s==' ')
+		temp=strange;
+	if (!p->next[temp]) return 0;
+        p = p->next[temp];
+    }
+    return p->value;
+}
+int lookup_matrix(char** s){
+    node* p = root;
+    for(char *g=*s;*g;g++)
+			{
+				int temp=*g-'a';
+				if (!p->next[temp]) return 0;
+        			p = p->next[temp];
+			}
+	++s;
+    for(;*s;++s)
+		{
+			if(!p->next[26])return 0;
+			p=p->next[26];
+			for(char *g=*s;*g;g++)
+			{
+				int temp=*g-'a';
+				if (!p->next[temp]) return 0;
+        			p = p->next[temp];
+			}
+		}
+    return p->value;
+}
+void input(int number){
+	FILE *fp;
+	string path="/tmp2/dsa2016_project/";
+	path+=char(number+'0');
+	path+="gm.small.txt";
+	fp = fopen(path.c_str(), "r");
+	char ch;
+	while(1){
+		node * p = root;
+		while((ch = fgetc(fp))!=EOF)
+		{
+			if(ch=='\t')
+				break;
+			else
+			{
+				if(ch==' ')
+					ch=strange;
+				ch=ch-'a';
+				if(!p->next[ch])
+					p->next[ch]=new node();
+				p=p->next[ch];
+			}
+		}
+		temp_value=0;
+		while(ch = fgetc(fp))
+		{
+			if(ch=='\n'||ch==EOF)
+				{
+					p->value=temp_value;
+					break;
+			}
+			else{
+				temp_value=temp_value*10+ch-'0';
+			}
+		}
+		if(ch==EOF)break;
+		//printf("%d\n",temp_value);
+		
+	}
+}
+void edit(char **b)
+{
+	for(int q=0;q<=i+1;q++)
+		for(int x=0;x<20;x++)
+			{
+				char **a=new char * [7];
+				for(int y=0;y<q;y++)
+					a[y]=b[y];
+				a[q]=prep[x];
+				for(int y=q+1;y<=i+2;y++)
+					a[y]=b[y-1];
+				a[i+3]=NULL;				
+				int num=lookup_matrix(a);
+				if(num)
+				{
+					total++;
+					queue1.push({num,a});
+				}
+			}
+}
+int main()
+{
+	for( i=2;i<6;i++)
+		input(i);
+	printf("welcome\n");
+	char a;
+	i=0,j=0;
+	/*
+	while(a=getchar())
+	{
+		//printf("666666666\n");
+		if(a==EOF)break;
+		if(a==' ')
+		{	
+			matrix[i][j]='\0';
+			i++;
+			j=0;
+		}
+		else if(a=='\n')
+		{
+			printf("fuck you asshole\n");
+			matrix[i][j]='\0';
+			int prep_amount=0;
+			for(int q=0;q<=i;q++)
+				for(int x=0;x<20;x++)
+					if(strcmp(prep[x],matrix[q])==0)
+						{
+							prep_amount++;
+							break;
+						}
+			printf("jerk\n");
+			printf("%d\n",prep_amount);
+			if(prep_amount==0)
+			{
+				char **gg=new char *[7];
+				printf("hey world\n");
+				for(int y=0;y<=i;y++)
+					gg[y]=matrix[y];
+				printf("belay\n");
+				gg[i+1]=NULL;
+				int num1=lookup_matrix(gg);
+				print(gg);
+				printf("hahahah\n");
+				if(num1)
+				{
+					queue1.push({num1,gg});
+					total++;
+				}
+				
+				if((i+1)<=4)
+				for(int q=0;q<=i;q++)
+					for(int x=0;x<20;x++)
+						{
+							char **qaq=new char *[7];
+							for(int y=0;y<q;y++)
+								qaq[y]=matrix[y];
+							qaq[q]=prep[x];
+							for(int y=q+1;y<=i+1;y++)
+								qaq[y]=matrix[y-1];
+							int num = lookup_matrix(qaq);
+							if(num)
+							{
+								queue1.push({num,qaq});
+								total++;
+							}
+							if((i+2)<=5)
+							{
+								edit(qaq);
+							}	
+						}
+			}
+			else
+			{
+
+			}
+			printf("query:");
+			for(int q=0;q<=i;q++)
+				printf(" %s",matrix[q]);
+			printf("\n");
+			printf("output: %d\n",total);
+			while(!queue1.empty())
+			{
+				data temp_gg=queue1.top();
+				print(temp_gg.b);
+				printf("%d\n",temp_gg.a);
+				queue1.pop();
+			}
+			i=j=total=0;
+		}
+		else{
+			matrix[i][j]=a;
+			j++;
+		}
+	}*/
+}
